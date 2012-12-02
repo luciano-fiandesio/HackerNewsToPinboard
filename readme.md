@@ -17,3 +17,4 @@ The Pinboard.in token is available [here](http://pinboard.in/settings/password)
 ## TODO ##
 
 - Parse also the second page of HN saved stories
+- Better handling of the script's input parameters
