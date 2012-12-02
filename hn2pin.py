@@ -22,10 +22,10 @@ import xml.etree.ElementTree as xml
 
 HACKERNEWS = 'http://news.ycombinator.com/'
 
-def getSavedStories(cookies):
+def getSavedStories(cookies, hnuser):
     print "get saved stories"
     savedStories = {}
-    saved = requests.get('https://news.ycombinator.com/saved?id=koevet',cookies=cookies)
+    saved = requests.get('https://news.ycombinator.com/saved?id=' + hnuser,cookies=cookies)
     #print saved.status_code
     soup = BeautifulSoup(saved.content)
 
@@ -81,7 +81,7 @@ def isAdded(addresult):
 
 def main():
     count = 0
-    links = getSavedStories( loginToHackerNews(sys.argv[1],sys.argv[2] ) )
+    links = getSavedStories( loginToHackerNews(sys.argv[1],sys.argv[2] ),sys.argv[1] )
     for key, value in links.iteritems():
         count+=postToPinboard(sys.argv[3], key, value)
         #print key + " > " + value
