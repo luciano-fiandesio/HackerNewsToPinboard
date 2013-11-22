@@ -6,9 +6,9 @@ Python script for syncronizing Hacker News <http://news.ycombinator.com> saved s
 Originally written on Pythonista on iPad
 """
 
-__version__ = "1.0"
+__version__ = "1.1"
 __license__ = "BSD"
-__copyright__ = "Copyright 2012, Luciano Fiandesio"
+__copyright__ = "Copyright 2013-2014, Luciano Fiandesio"
 __author__ = "Luciano Fiandesio <http://fiandes.io/>"
 
 import re
@@ -20,49 +20,57 @@ import requests
 from types import *
 import xml.etree.ElementTree as xml
 
-HACKERNEWS = 'http://news.ycombinator.com/'
+HACKERNEWS = 'https://news.ycombinator.com'
 
-def getSavedStories(cookies, hnuser):
-    print "get saved stories"
+def getSavedStories(session, hnuser):
+    print "...get saved stories..."
     savedStories = {}
-    saved = requests.get('https://news.ycombinator.com/saved?id=' + hnuser,cookies=cookies)
-    #print saved.status_code
+    saved = session.get(HACKERNEWS + '/saved?id=' + hnuser)
+
     soup = BeautifulSoup(saved.content)
 
     for tag in soup.findAll('td',attrs={'class':'title'}):
+
         if type(tag.a) is not NoneType:
-            
+
             _href = tag.a['href']
             if not str.startswith(str(_href), '/x?fnid'): # skip the 'More' link
                 _href = HACKERNEWS+_href if str.startswith(str(_href), 'item?') else _href
                 savedStories[_href] = tag.a.text
-            
+
     return savedStories
 
 def loginToHackerNews(username, password):
-    # Request a blank login page to harvest the fnid (a CSRF-type key).
-    r = requests.get('https://news.ycombinator.com/newslogin')
-    
-    soup = BeautifulSoup(r.content)
+    s = requests.Session() # init a session (use cookies across requests)
 
+    headers = { # we need to specify an header to get the right cookie
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0',
+        'Accept' : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+
+    loginPage = s.get(HACKERNEWS + '/newslogin', headers=headers)
+
+    soup = BeautifulSoup(loginPage.content)
     inputTag = soup.find(attrs={"name": "fnid"})
     fnid = inputTag['value']
-    
+
     # Build the login POST data and make the login request.
     payload = {
         'fnid': fnid,
         'u': username,
-        'p': password,
+        'p': password
     }
-    r = requests.post('https://news.ycombinator.com/y', data=payload)
-    
-    if 'Bad login' in str(r.content):
+    auth = s.post(HACKERNEWS+'/y', data=payload, headers=headers )
+
+    if 'Bad login' in str(auth.content):
         raise Exception("Hacker News authentication failed!")
-    
-    return r.cookies
+    if not username in str(auth.content):
+        raise Exception("Hacker News didn't succeed, username not displayed.")
+
+    return s # return the http session
 
 def postToPinboard(token, url, title):
-    
+
     payload = {
         'auth_token':token,
         'url': url,
@@ -84,7 +92,6 @@ def main():
     links = getSavedStories( loginToHackerNews(sys.argv[1],sys.argv[2] ),sys.argv[1] )
     for key, value in links.iteritems():
         count+=postToPinboard(sys.argv[3], key, value)
-        #print key + " > " + value
 
     print "Added %d links to Pinboard" % count
 
