@@ -32,12 +32,13 @@ def getSavedStories(session, hnuser):
     for tag in soup.findAll('td',attrs={'class':'title'}):
 
         if type(tag.a) is not NoneType:
-
-            _href = tag.a['href']
-            if not str.startswith(str(_href), '/x?fnid'): # skip the 'More' link
-                _href = HACKERNEWS+_href if str.startswith(str(_href), 'item?') else _href
-                savedStories[_href] = tag.a.text
-
+            try:
+                _href = tag.a['href']
+                if not str.startswith(str(_href), '/x?fnid'): # skip the 'More' link
+                    _href = HACKERNEWS+_href if str.startswith(str(_href), 'item?') else _href
+                    savedStories[_href] = tag.a.text
+            except:
+                print "The saved story has no link, skipping"
     return savedStories
 
 def loginToHackerNews(username, password):
