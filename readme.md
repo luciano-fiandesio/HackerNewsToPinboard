@@ -2,9 +2,9 @@
 
 Synchronize saved stories on Hacker News with Pinboard.in.
 
-The script parses the saved stories page on HN (http://news.ycombinator.com) and for each link on the first page save the story's link to Pinboard (http://pinboard.in), using the REST Pinboard API.
+The script parses the saved stories page on HN (http://news.ycombinator.com) and, for each link on the first page, it saves the story's link to Pinboard (http://pinboard.in), using the REST Pinboard API.
 
-The script is meant to be launch periodically by a scheduler (cron, etc.)
+The script is meant to be launched periodically by a scheduler (cron, etc.)
 
 Originally developed on iPad with the awesome Pythonista (http://omz-software.com/pythonista/)
 
