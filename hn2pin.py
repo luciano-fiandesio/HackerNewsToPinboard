@@ -49,20 +49,13 @@ def loginToHackerNews(username, password):
         'Accept' : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
-    loginPage = s.get(HACKERNEWS + '/newslogin', headers=headers)
-
-    soup = BeautifulSoup(loginPage.content)
-    inputTag = soup.find(attrs={"name": "fnid"})
-    fnid = inputTag['value']
-
     # Build the login POST data and make the login request.
     payload = {
-        'fnid': fnid,
-        'u': username,
-        'p': password
+        'whence': 'news',
+        'acct': username,
+        'pw': password
     }
-    auth = s.post(HACKERNEWS+'/y', data=payload, headers=headers )
-
+    auth = s.post(HACKERNEWS+'/login', data=payload, headers=headers )
     if 'Bad login' in str(auth.content):
         raise Exception("Hacker News authentication failed!")
     if not username in str(auth.content):
